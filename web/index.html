@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Paint-Room</title>
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/class.js"></script>
+	<script type="text/javascript" src="js/PaintRoomClient.js"></script>
+	<script type="text/javascript" src="js/start.js"></script>
+</head>
+<body>
+	<div id="paint-sketch">
+		<canvas id="paint-canvas" width="500" height="500"></canvas>
+	</div>
+	<div id="paint-controls">
+		<button onclick="client.redraw();">Redraw</button>
+		<button onclick="client.clear();">Clear</button>
+	</div>
+	<div id="paint-member-list">
+		<ul>
+			<li>1</li>
+		</ul>
+	</div>
+</body>
+</html>

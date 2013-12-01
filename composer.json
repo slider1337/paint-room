@@ -1,0 +1,12 @@
+{
+  "name" : "slider1337/paint-room",
+  "version" : "0.1",
+  "require" : {
+    "cboden/ratchet" : "v0.3.0"
+  },
+  "autoload" : {
+    "psr-0" : {
+      "PaintRoom\\" : "src/"
+    }
+  }
+}
