@@ -6,45 +6,149 @@ use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 
 /**
- * Send any incoming messages to all connected clients (except sender).
+ * Handles the websocket communication with all clients.
+ * 
+ * @author Benedikt Schaller
  */
 class MessageServer implements MessageComponentInterface {
+	
+	/**
+	 * @var \SplObjectStorage
+	 */
     protected $clients;
+    
+    /**
+     * @var MessageRouter
+     */
+    protected $router;
 
-    public function __construct() {
+    /**
+     * Constructor.
+     * 
+     * @author Benedikt Schaller
+     */
+    public function __construct(MessageRouter $router) {
         $this->clients = new \SplObjectStorage;
+        $this->router = $router;
     }
 
-    public function onOpen(ConnectionInterface $conn) {
+    /**
+     * Returns the client list.
+     * 
+     * @author Benedikt Schaller
+	 * @return \SplObjectStorage The list of clients.
+	 */
+	public function getClients() {
+		return $this->clients;
+	}
+
+	/**
+	 * Add a client to the connection pool.
+	 * 
+	 * @author Benedikt Schaller
+	 * @param SplObjectStorage $clients
+	 * @return void
+	 */
+	protected function addClient(ConnectionInterface $client) {
+		$this->clients->attach($client);
+	}
+	
+	/**
+	 * Removes a client from the connection pool.
+	 * 
+	 * @author Benedikt Schaller
+	 * @param ConnectionInterface $client
+	 * @return void
+	 */
+	protected function removeClient(ConnectionInterface $client) {
+		$this->clients->detach($client);
+	}
+
+	/**
+	 * (non-PHPdoc)
+	 * @see \Ratchet\ComponentInterface::onOpen()
+	 * @author Benedikt Schaller
+	 */
+	public function onOpen(ConnectionInterface $conn) {
         // Store the new connection to send messages to later
-        $this->clients->attach($conn);
+        $this->addClient($conn);
+        
+        // Create open connection message and route it
+        $message = new Message();
+        $message->setPath(MessageRouter::ROUTE_OPEN_CONNECTION);
+        $message->setSender($conn);
+        $this->handleMessage($message);
 
         echo "New connection! ({$conn->resourceId})\n";
     }
 
+    /**
+     * (non-PHPdoc)
+     * @see \Ratchet\MessageInterface::onMessage()
+     * @author Benedikt Schaller
+     */
     public function onMessage(ConnectionInterface $from, $msg) {
-        $numRecv = count($this->clients) - 1;
+    	$clients = $this->getClients();
+    	
+        $numRecv = count($clients) - 1;
         echo sprintf('Connection %d sending message "%s" to %d other connection%s' . "\n"
             , $from->resourceId, $msg, $numRecv, $numRecv == 1 ? '' : 's');
 
-        foreach ($this->clients as $client) {
-            //if ($from !== $client) {
-                // The sender is not the receiver, send to each client connected
-                $client->send($msg);
-            //}
-        }
+        $messageArray = json_decode($msg, true);
+        $message = new Message();
+        $message->jsonDeserialize($messageArray);
+        $this->handleMessage($message);
+        
+//         foreach ($clients as $client) {
+//         	if (! $client instanceof ConnectionInterface) {
+//         		continue;
+//         	}
+//         	//if ($from !== $client) {
+//         	// The sender is not the receiver, send to each client connected
+//         	$client->send($msg);
+//         	//}
+//         }
     }
 
+    /**
+     * (non-PHPdoc)
+     * @see \Ratchet\ComponentInterface::onClose()
+     * @author Benedikt Schaller
+     */
     public function onClose(ConnectionInterface $conn) {
+    	// Create close connection message and route it
+    	$message = new Message();
+    	$message->setPath(MessageRouter::ROUTE_CLOSE_CONNECTION);
+    	$message->setSender($conn);
+    	$this->handleMessage($message);
+    	
         // The connection is closed, remove it, as we can no longer send it messages
-        $this->clients->detach($conn);
+        $this->removeClient($conn);
 
         echo "Connection {$conn->resourceId} has disconnected\n";
     }
 
+    /**
+     * (non-PHPdoc)
+     * @see \Ratchet\ComponentInterface::onError()
+     * @author Benedikt Schaller
+     */
     public function onError(ConnectionInterface $conn, \Exception $e) {
         echo "An error has occurred: {$e->getMessage()}\n";
+        var_dump($e);
 
         $conn->close();
+    }
+    
+    /**
+     * Handles a message received by this server.
+     * 
+     * @author Benedikt Schaller
+     * @param Message $message
+     * @return void
+     */
+    private function handleMessage(Message $message) {
+    	$handler = $this->router->route($message);
+    	$handler->handleMessage($message, $this);
     }
 }
