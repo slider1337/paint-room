@@ -111,4 +111,15 @@ class Message implements \JsonSerializable {
 			$this->$key = $value;
 		}
 	}
+	
+	/**
+	 * String representation of a message.
+	 * Converts the message to a json encoded string.
+	 * 
+	 * @author Benedikt Schaller
+	 * @return string
+	 */
+	public function __toString() {
+		return json_encode($this);
+	}
 }

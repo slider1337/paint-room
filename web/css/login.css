@@ -1,0 +1,16 @@
+@CHARSET "UTF-8";
+
+div#paint-room-login {
+	padding-bottom: 40px;
+    padding-top: 40px;
+}
+
+div#paint-room-login form {
+    margin: 0 auto;
+    max-width: 330px;
+    padding: 15px;
+}
+
+div#paint-room-login form input {
+	margin-bottom: 10px;
+}

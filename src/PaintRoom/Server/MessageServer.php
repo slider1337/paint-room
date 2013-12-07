@@ -1,9 +1,11 @@
 <?php
 
-namespace PaintRoom\Server\Message;
+namespace PaintRoom\Server;
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
+use PaintRoom\Server\Message\Message;
+use PaintRoom\Server\Message\Handler\IMessageHandler;
 
 /**
  * Handles the websocket communication with all clients.
@@ -97,17 +99,8 @@ class MessageServer implements MessageComponentInterface {
         $messageArray = json_decode($msg, true);
         $message = new Message();
         $message->jsonDeserialize($messageArray);
+        $message->setSender($from);
         $this->handleMessage($message);
-        
-//         foreach ($clients as $client) {
-//         	if (! $client instanceof ConnectionInterface) {
-//         		continue;
-//         	}
-//         	//if ($from !== $client) {
-//         	// The sender is not the receiver, send to each client connected
-//         	$client->send($msg);
-//         	//}
-//         }
     }
 
     /**
@@ -148,7 +141,13 @@ class MessageServer implements MessageComponentInterface {
      * @return void
      */
     private function handleMessage(Message $message) {
-    	$handler = $this->router->route($message);
-    	$handler->handleMessage($message, $this);
+    	try {
+    		$handler = $this->router->route($message);
+    		if ($handler instanceof IMessageHandler) {
+    			$handler->handleMessage($message, $this);
+    		}
+    	} catch (\Exception $ex) {
+    		var_dump($ex);
+    	}
     }
 }

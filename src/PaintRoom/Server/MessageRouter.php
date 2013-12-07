@@ -1,6 +1,9 @@
 <?php
 
-namespace PaintRoom\Server\Message;
+namespace PaintRoom\Server;
+
+use PaintRoom\Server\Message\Message;
+use PaintRoom\Server\Message\Handler\IMessageHandler;
 
 /**
  * Is responsable for the routing. Knows which message is handled by which message handler.
@@ -36,6 +39,7 @@ class MessageRouter {
 	 */
 	public function route(Message $message) {
 		if (array_key_exists($message->getPath(), $this->routes)) {
+			echo "Route executed {$message->getPath()}\n";
 			return $this->routes[$message->getPath()];
 		}
 		return null;
