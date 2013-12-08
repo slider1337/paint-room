@@ -249,7 +249,7 @@ var PaintRoomCanvas = Class.extend({
 	 * @author Benedikt Schaller
 	 * @param boolean forcePaint Bypass the paints per second limit if true. 
 	 */
-	paint: function(forcePaint = false) {
+	paint: function(forcePaint) {
 		var that = this;
 		var paintWaitTime = 1000 / this.maxPaintsPerSecond;
 		var now = (new Date()).getTime();
