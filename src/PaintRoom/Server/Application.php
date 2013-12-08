@@ -22,11 +22,12 @@ class Application {
 	/**
 	 * Starts the paint-room server on the given host and port.
 	 * 
-	 * @param string $host
-	 * @param int $port
+	 * @param string $hostname The hostname or ip address of the websocket server.
+	 * @param int $port The port to listen on.
+	 * @param string $ipAddress The ip address to bind the server to.
 	 * @return void
 	 */
-	public static function start($host, $port) {
+	public static function start($hostname, $port, $ipAddress = '0.0.0.0') {
 		try {
 			// Create all needed services
 			$userService = new UserService();
@@ -43,7 +44,7 @@ class Application {
 			$messageServer = new MessageServer($router);
 			
 			// Create the websocket server with the path for the paint room
-			$server = new App($host, $port);
+			$server = new App($hostname, $port, $ipAddress);
 			$server->route('/paintroom', $messageServer, array('*'));
 			$server->run();
 		} catch (\Exception $ex) {

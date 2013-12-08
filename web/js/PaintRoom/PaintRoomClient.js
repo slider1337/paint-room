@@ -1,7 +1,7 @@
 // Define one global variable for the paint room client
 var paintRoomClient = null;
 $( document ).ready(function() {
-	paintRoomClient = new PaintRoomClient('localhost', '80', 'receiver');
+	paintRoomClient = new PaintRoomClient('localhost', '8080');
 });
 
 
@@ -75,7 +75,7 @@ var PaintRoomClient = Class.extend({
 		this.paintRoomLogin = $('#paint-room-login');
 		this.paintRoomLogin.find('button.submit-login').bind( "click", {that: this}, this.onSubmitLogin);
 		this.setContextElement(this.paintRoomLogin.find('input[name="username"]'));
-		
+		this.paintRoomLogin.find('input[name="username"]').bind( "keypress", {that: this}, this.onLoginKeyPress);
 		
 		// Setup paint room main room controls
 		this.paintRoomContainer = $('#paint-room');
@@ -138,6 +138,20 @@ var PaintRoomClient = Class.extend({
 					path: 'user/login'
 				};
 		that.sendMessage(message);
+	},
+	
+	/**
+	 * Submits the login form on enter key press.
+	 * 
+	 * @access private
+	 * @author Benedikt Schaller
+	 * @param Event event The triggered event.
+	 */
+	onLoginKeyPress: function(event) {
+		if (event.which == 13) {
+			$('button.submit-login').click();
+			event.preventDefault();
+		}
 	},
 	
 	/**

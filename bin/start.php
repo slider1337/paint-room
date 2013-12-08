@@ -4,4 +4,4 @@ use PaintRoom\Server\Application;
 // Make sure composer dependencies have been installed
 require __DIR__ . '/../vendor/autoload.php';
 
-Application::start('localhost', 80);
+Application::start('localhost', 8080);

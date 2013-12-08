@@ -1,0 +1,33 @@
+@CHARSET "UTF-8";
+
+html, body {
+	width:	100%;
+	height: 100%;
+	margin: 0px;
+}
+div#paint-room {
+	display: none;
+	height: 100%;
+	margin-bottom: 0px;
+}
+div#paint-room img.logo {
+	vertical-align: text-top;
+}
+div#paint-room div.panel-body {
+	border-bottom: 0px;
+	height: auto;
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+div#paint-room div#paint-sketch {
+	background-color: lightgray;
+	overflow: auto;
+	text-align: center;
+}
+div#paint-room div#paint-sketch canvas#paint-canvas {
+	background-color: white;
+}
+div#paint-room ul#paint-member-list {
+	margin-bottom: 0px;
+	overflow: auto;
+}

@@ -46,7 +46,8 @@ class LoginHandler implements IMessageHandler {
 	 * @author Benedikt Schaller
 	 */
 	public function handleMessage(Message $message, MessageServer $messageServer) {
-		$username = $message->getData()['username'];
+		$data = $message->getData();
+		$username = $data['username'];
 		
 		if (! $this->userService->isUsernameFree($username)) {
 			// If no valid username, send message to client

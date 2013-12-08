@@ -9,7 +9,7 @@ use Ratchet\ConnectionInterface;
  * 
  * @author Benedikt Schaller
  */
-class Message implements \JsonSerializable {
+class Message {
 	
 	/**
 	 * @var string
@@ -120,6 +120,7 @@ class Message implements \JsonSerializable {
 	 * @return string
 	 */
 	public function __toString() {
-		return json_encode($this);
+		$serializeableObject = $this->jsonSerialize();
+		return json_encode($serializeableObject);
 	}
 }
