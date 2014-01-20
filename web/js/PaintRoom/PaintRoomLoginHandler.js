@@ -12,10 +12,11 @@ var PaintRoomLoginHandler = PaintRoomMessageHandler.extend({
 	 * @param Object message
 	 */
 	handle: function(message) {
-		var username = message.username;
+		// Currently not needed
+		//var username = message.username;
 		
-		var contextElement = this.paintRoomClient.paintRoomContainer.css('display', 'block');
-		var contextElement = this.paintRoomClient.paintRoomLogin.css('display', 'none');
+		this.paintRoomClient.paintRoomContainer.css('display', 'block');
+		this.paintRoomClient.paintRoomLogin.css('display', 'none');
 		this.paintRoomClient.canvas.resize();
 	}
 });

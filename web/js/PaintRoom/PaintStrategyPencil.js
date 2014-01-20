@@ -49,9 +49,6 @@ var PaintStrategyPencil = Class.extend({
 	 * @return void
 	 */
 	mouseMove: function(paintRoomCanvas) {
-		// Get the context
-		var canvasContext = paintRoomCanvas.canvasContext;
-		
 		// Create the pencil object to paint
 		var positionStart = new PaintPosition(this.lastPaintPosition.x, this.lastPaintPosition.y);
 		var positionEnd = new PaintPosition(paintRoomCanvas.mousePosition.x, paintRoomCanvas.mousePosition.y);

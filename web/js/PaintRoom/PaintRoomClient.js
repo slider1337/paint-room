@@ -1,7 +1,7 @@
 // Define one global variable for the paint room client
 var paintRoomClient = null;
 $( document ).ready(function() {
-	paintRoomClient = new PaintRoomClient('localhost', '8080');
+	paintRoomClient = new PaintRoomClient('paint-room.de', '8080');
 });
 
 
@@ -63,6 +63,16 @@ var PaintRoomClient = Class.extend({
 	messageRouter: null,
 	
 	/**
+	 * @var string
+	 */
+	host: null,
+	
+	/**
+	 * @var string
+	 */
+	port: null,
+	
+	/**
 	 * Constructor
 	 * 
 	 * @access public
@@ -71,6 +81,9 @@ var PaintRoomClient = Class.extend({
 	 * @param int port The port on which the server is running. 
 	 */
 	init: function(host, port) {
+		this.host = host;
+		this.port = port;
+		
 		// Setup login form
 		this.paintRoomLogin = $('#paint-room-login');
 		this.paintRoomLogin.find('button.submit-login').bind( "click", {that: this}, this.onSubmitLogin);
@@ -92,7 +105,7 @@ var PaintRoomClient = Class.extend({
 		this.messageRouter = new PaintRoomRouter(this);
 		
 		// Connect to the websocket server
-		this.connect(host, port);
+		this.connect();
 	},
 	
 	/**
@@ -130,7 +143,28 @@ var PaintRoomClient = Class.extend({
 		// Get the PaintRoomClient object
 		var that = event.data.that;
 		
-		var username = $(this.form).find('input[name="username"]').val();
+		if (that.webSocket.readyState != 1) {
+			// If connection was closed, try to reconnect and then login
+			that.connect(that.login);
+		} else {
+			// Otherwise try login directly
+			that.login();
+		}
+	},
+	
+	/**
+	 * Trys a login.
+	 * 
+	 * @access private
+	 * @author Benedikt Schaller
+	 */
+	login: function(that) {
+		// If called as event handler, the client will be passed as parameter
+		// otherwise we are called in the right context
+		if (! that) {
+			that = this;
+		}
+		var username = $(that.paintRoomLogin).find('input[name="username"]').val();
 		var message = {
 					data: {
 						username: username,
@@ -159,16 +193,14 @@ var PaintRoomClient = Class.extend({
 	 * 
 	 * @access private
 	 * @author Benedikt Schaller
-	 * @param string host The server hostname.
-	 * @param int port The port on which the server is running.
+	 * @param Function onConnectCallback The callback function to call after the connection was established.
 	 */
-	connect: function(host, port) {
-		this.webSocket = new WebSocket('ws://' + host + ':' + port + '/paintroom');
-		this.webSocket.onopen = this.onOpenConnection;
-		this.webSocket.onmessage = this.onReceiveMessage;
-		
-		// Needed to receive the PaintRoomClient in the websocket events
-		this.webSocket.client = this;
+	connect: function(onConnectCallback) {
+		var that = this;
+		this.webSocket = new WebSocket('ws://' + this.host + ':' + this.port + '/paintroom');
+		this.webSocket.onopen = function(event) {that.onOpenConnection(event);if (onConnectCallback) {onConnectCallback(that);}};
+		this.webSocket.onmessage = function(event) {that.onReceiveMessage(event);};
+		this.webSocket.onclose = function(event) {that.onCloseConnection(event);};
 	},
 	
 	/**
@@ -179,11 +211,8 @@ var PaintRoomClient = Class.extend({
 	 * @param Event event The triggered event.
 	 */
 	onOpenConnection: function(event) {
-		// Get the PaintRoomClient object
-		var that = this.client;
-		
 		// Enable the controls
-		that.enableClient();
+		this.enableClient();
 		
 		// Log message
 		console.log("Connection established!");
@@ -197,14 +226,36 @@ var PaintRoomClient = Class.extend({
 	 * @param Event event The triggered event.
 	 */
 	onReceiveMessage: function(event) {
-		// Get the PaintRoomClient object
-		var that = this.client;
-		
 		// Parse the json message
 		var message = JSON.parse(event.data);
 		
 		// Route the message
-		that.messageRouter.route(message);
+		this.messageRouter.route(message);
+	},
+	
+	/**
+	 * Handler called when websocket connection is closed.
+	 * 
+	 * @access private
+	 * @author Benedikt Schaller
+	 * @param Event event The triggered event.
+	 */
+	onCloseConnection: function(event) {
+		// Hide paint room and go back to login screen
+		this.paintRoomContainer.css('display', 'none');
+		this.paintRoomLogin.css('display', 'block');
+		
+		// Show error message
+		text = 'Connection was closed: ';
+		if (event.reason.length > 0) {
+			text += event.reason;
+		} else {
+			text += 'No reason given';
+		}
+		text += ' (Code: ' + event.code + ').';
+		var contextElement = this.getContextElement();
+		contextElement.popover({placement: 'auto', content: text});
+		contextElement.popover('show');
 	},
 	
 	/**
