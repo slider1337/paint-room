@@ -104,9 +104,59 @@ var PaintRoomCanvas = Class.extend({
 		this.resize();
 		
 		/* Mouse Capturing Work */
-		this.canvas.bind( "mousemove", {that: this}, this.onCanvasMouseMove);
-		this.canvas.bind( "mousedown", {that: this}, this.onCanvasMouseDown);
-		this.canvas.bind( "mouseup", {that: this}, this.onCanvasMouseUp);
+		this.canvas.bind("mousemove", {that: this}, this.onCanvasMouseMove);
+		this.canvas.bind("mousedown", {that: this}, this.onCanvasMouseDown);
+		this.canvas.bind("mouseup", {that: this}, this.onCanvasMouseUp);
+		/* Convert touch events to mouse events */
+		var that = this;
+		this.canvas[0].addEventListener("touchmove", function(event){that.touchHandler(event, that);}, false);
+		this.canvas[0].addEventListener("touchstart", function(event){that.touchHandler(event, that);}, false);
+		this.canvas[0].addEventListener("touchend", function(event){that.touchHandler(event, that);}, false);
+		this.canvas[0].addEventListener("touchcancel", function(event){that.touchHandler(event, that);}, false);
+	},
+	
+	/**
+	 * Handler for touch events on the canvas. Will call the
+	 * corresponding mouse event handler.
+	 * 
+	 * @access public
+	 * @author Benedikt Schaller
+	 * @param Event event The triggered event.
+	 * @param PaintRoomCanvas that The PaintRoomCanvas object self reference. 
+	 */
+	touchHandler: function(event, that) {
+		// If there's exactly one finger inside this element
+		// paint, so zooming is still possible
+		if (event.targetTouches.length == 1) {
+			var touch = event.targetTouches[0];
+
+			// Convert touch in mouse event
+			var eventMouse = {};
+			eventMouse.data = {};
+			eventMouse.data.that = that;
+			eventMouse.pageX = touch.pageX;
+			eventMouse.pageY = touch.pageY;
+			
+			// Call the corresponding mouse handler for the touch event
+			switch(event.type) {
+				case "touchstart":
+					that.onCanvasMouseDown(eventMouse);
+		        	break;
+		        case "touchmove":
+		        	// Need to prevent default for android deviced, otherwise the
+		        	// touchmove event will only be called once
+		        	if (navigator.userAgent.match(/Android/i)) {
+		        		event.preventDefault();
+		        	}
+		        	that.onCanvasMouseMove(eventMouse);
+		        	break;        
+		        case "touchend":
+		        case "touchcancel":
+		        	that.onCanvasMouseUp(eventMouse);
+		        	break;
+		        default: return;
+		    }
+		}
 	},
 	
 	/**
@@ -168,6 +218,11 @@ var PaintRoomCanvas = Class.extend({
 	onCanvasMouseDown: function(event) {
 		// Get class reference from event data
 		var that = event.data.that;
+		
+		// Always update the current mouse position
+		var offset = that.canvas.offset();
+		that.mousePosition.x = event.pageX - offset.left;
+		that.mousePosition.y = event.pageY - offset.top;
 		
 		// Start painting
 		that.isPainting = true;
