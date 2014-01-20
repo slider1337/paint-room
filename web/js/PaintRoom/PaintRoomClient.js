@@ -1,7 +1,7 @@
 // Define one global variable for the paint room client
 var paintRoomClient = null;
 $( document ).ready(function() {
-	paintRoomClient = new PaintRoomClient('paint-room.de', '8080');
+	paintRoomClient = new PaintRoomClient('localhost', '8080');
 });
 
 
