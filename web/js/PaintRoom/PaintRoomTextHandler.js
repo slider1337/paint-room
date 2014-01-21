@@ -15,6 +15,7 @@ var PaintRoomTextHandler = PaintRoomMessageHandler.extend({
 		var text = message.data.text;
 		
 		var contextElement = this.paintRoomClient.getContextElement();
+		contextElement.popover('destroy');
 		contextElement.popover({placement: 'auto', content: text});
 		contextElement.popover('show');
 

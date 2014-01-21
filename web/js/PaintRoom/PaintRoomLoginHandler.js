@@ -15,6 +15,11 @@ var PaintRoomLoginHandler = PaintRoomMessageHandler.extend({
 		// Currently not needed
 		//var username = message.username;
 		
+		// Reset user list
+		var memberList = this.paintRoomClient.memberList;
+		memberList.html('');
+		
+		// Show paint room and hide login form
 		this.paintRoomClient.paintRoomContainer.css('display', 'block');
 		this.paintRoomClient.paintRoomLogin.css('display', 'none');
 		this.paintRoomClient.canvas.resize();

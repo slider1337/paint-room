@@ -130,7 +130,8 @@ class MessageServer implements MessageComponentInterface {
         echo "An error has occurred: {$e->getMessage()}\n";
         var_dump($e);
 
-        $conn->close();
+        // Close connection on error
+        $this->onClose($conn);
     }
     
     /**

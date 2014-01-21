@@ -33,6 +33,20 @@ class UserService {
 	 * @return void
 	 */
 	private function addUser(User $user) {
+		// Check if the same connection has allready one active
+		// user and remove it, otherwise one connection could have
+		// multiple active users
+		$userList = $this->getUsers();
+		foreach ($userList as $existingUser) {
+			if (! $existingUser instanceof User) {
+				continue;
+			}
+			
+			if ($existingUser->getConnection() == $user->getConnection()) {
+				$this->removeUser($existingUser);
+			}
+		}
+		// Add new user to list
 		$this->userList->attach($user);
 	}
 	
